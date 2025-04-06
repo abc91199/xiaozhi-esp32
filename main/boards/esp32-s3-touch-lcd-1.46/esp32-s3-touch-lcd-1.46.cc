@@ -64,7 +64,7 @@ private:
     i2c_master_bus_handle_t i2c_bus_;
     esp_io_expander_handle_t io_expander = NULL;
     LcdDisplay* display_;
-    button_handle_t boot_btn,pwr_btn;
+    button_handle_t boot_btn, pwr_btn, record_btn;
 
     void InitializeI2c() {
         // Initialize I2C peripheral
@@ -156,6 +156,11 @@ private:
         gpio_set_direction(PWR_Control_PIN, GPIO_MODE_OUTPUT);     
         // gpio_set_level(PWR_Control_PIN, false);
         gpio_set_level(PWR_Control_PIN, true);
+
+        // Initialize recording button
+        gpio_reset_pin(GPIO_NUM_3);
+        gpio_set_direction(GPIO_NUM_3, GPIO_MODE_INPUT);
+        gpio_set_pull_mode(GPIO_NUM_3, GPIO_PULLUP_ONLY);
     }
     void InitializeButtons() {
         InitializeButtonsCustom();
@@ -186,7 +191,7 @@ private:
             // 长按无处理
         }, this);
 
-        btns_config.long_press_time = 5000;
+
         btns_config.custom_button_config.button_custom_get_key_value = [](void *param) -> uint8_t {
             return gpio_get_level(PWR_BUTTON_GPIO);
         };
@@ -200,6 +205,30 @@ private:
             // 短按无处理
         }, this);
         iot_button_register_cb(pwr_btn, BUTTON_LONG_PRESS_START, [](void* button_handle, void* usr_data) {
+            auto self = static_cast<CustomBoard*>(usr_data);
+            if(self->GetBacklight()->brightness() > 0) {
+                self->GetBacklight()->SetBrightness(0);
+                gpio_set_level(PWR_Control_PIN, false);
+            }
+            else {
+                self->GetBacklight()->RestoreBrightness();
+                gpio_set_level(PWR_Control_PIN, true);
+            }
+        }, this);
+
+        // Add recording button
+        btns_config.long_press_time = 2000;
+        btns_config.custom_button_config.button_custom_get_key_value = [](void *param) -> uint8_t {
+            return gpio_get_level(GPIO_NUM_3);
+        };
+        record_btn = iot_button_create(&btns_config);
+        iot_button_register_cb(record_btn, BUTTON_PRESS_DOWN, [](void* button_handle, void* usr_data) {
+            Application::GetInstance().StartListening();
+        }, this);
+        iot_button_register_cb(record_btn, BUTTON_PRESS_UP, [](void* button_handle, void* usr_data) {
+            Application::GetInstance().StopListening();
+        }, this);
+        iot_button_register_cb(record_btn, BUTTON_DOUBLE_CLICK, [](void* button_handle, void* usr_data) {
             auto self = static_cast<CustomBoard*>(usr_data);
             if(self->GetBacklight()->brightness() > 0) {
                 self->GetBacklight()->SetBrightness(0);

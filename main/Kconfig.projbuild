@@ -2,14 +2,21 @@ menu "Xiaozhi Assistant"
 
 config OTA_VERSION_URL
     string "OTA Version URL"
-    default "https://api.tenclass.net/xiaozhi/ota/"
+    default "http://192.168.200.221:5000/ota/"
     help
         The application will access this URL to check for updates.
+        The server should return a JSON response with firmware information:
+        {
+            "firmware": {
+                "version": "1.0.0",
+                "url": "http://server/ota/firmware.bin"
+            }
+        }
 
 
 choice
     prompt "语言选择"
-    default LANGUAGE_ZH_CN
+    default LANGUAGE_EN_US
     help
         Select device display language
 
@@ -22,7 +29,7 @@ endchoice
 
 choice CONNECTION_TYPE
     prompt "Connection Type"
-    default CONNECTION_TYPE_MQTT_UDP
+    default CONNECTION_TYPE_WEBSOCKET
     help
         网络数据传输协议
     config CONNECTION_TYPE_MQTT_UDP
@@ -34,7 +41,7 @@ endchoice
 config WEBSOCKET_URL
     depends on CONNECTION_TYPE_WEBSOCKET
     string "Websocket URL"
-    default "wss://api.tenclass.net/xiaozhi/v1/"
+    default "ws://192.168.200.221:8000/xiaozhi/v1/"
     help
         Communication with the server through websocket after wake up.
 
@@ -47,7 +54,7 @@ config WEBSOCKET_ACCESS_TOKEN
 
 choice BOARD_TYPE
     prompt "Board Type"
-    default BOARD_TYPE_BREAD_COMPACT_WIFI
+    default BOARD_TYPE_ESP32S3_Touch_LCD_1_46
     help
         Board type. 开发板类型
     config BOARD_TYPE_BREAD_COMPACT_WIFI
