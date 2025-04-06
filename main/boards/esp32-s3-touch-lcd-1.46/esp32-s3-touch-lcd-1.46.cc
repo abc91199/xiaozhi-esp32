@@ -114,7 +114,7 @@ private:
         ESP_ERROR_CHECK(spi_bus_initialize(QSPI_LCD_HOST, &bus_config, SPI_DMA_CH_AUTO));
     }
 
-    void Initializespd2010Display() {
+    void InitializeSpd2010Display() {
         esp_lcd_panel_io_handle_t panel_io = nullptr;
         esp_lcd_panel_handle_t panel = nullptr;
 
@@ -245,7 +245,7 @@ private:
     void InitializeIot() {
         auto& thing_manager = iot::ThingManager::GetInstance();
         thing_manager.AddThing(iot::CreateThing("Speaker"));
-        thing_manager.AddThing(iot::CreateThing("Backlight"));
+        thing_manager.AddThing(iot::CreateThing("Screen"));
     }
 
 public:
@@ -253,7 +253,7 @@ public:
         InitializeI2c();
         InitializeTca9554();
         InitializeSpi();
-        Initializespd2010Display();
+        InitializeSpd2010Display();
         InitializeButtons();
         InitializeIot();
         GetBacklight()->RestoreBrightness();
